@@ -46,4 +46,4 @@ gulp.task('watch', function () {
 	gulp.watch('./**/*.php').on('change', browserSync.reload);
 });
 
-gulp.task('default', ['styles']);
+gulp.task('default', ['browser-sync', 'watch']);

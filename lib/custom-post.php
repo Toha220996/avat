@@ -161,4 +161,67 @@ function save_portfolio_sort_order( $post_id ){
 }
 add_action( 'save_post', 'save_portfolio_sort_order' );
 
+
+
+
+// подключаем функцию активации мета блока (my_extra_fields)
+add_action('add_meta_boxes', 'extra_fields', 1);
+
+function extra_fields() {
+	add_meta_box( 'id_body_type_car', 'Тип кузова', 'body_type_car_field', 'portfolio', 'normal', 'high'  );
+	add_meta_box( 'id_age_car_field', 'Год выпуска', 'age_car_field', 'portfolio', 'normal', 'high'  );
+}
+function body_type_car_field( $post ){
+	?>
+	<p>Выберите тип кузова автомобиля:</p>
+	<p><select name="extra[body_type_car]">
+			<?php $body_type_car = get_post_meta($post->ID, 'body_type_car', 1); ?>
+			<option value="Не выбрано!">Выбрать</option>
+			<option value="Седан" <?php selected( $body_type_car, 'Седан' )?> >Седан</option>
+			<option value="Универсал" <?php selected( $body_type_car, 'Универсал' )?> >Универсал</option>
+			<option value="Хэтчбэк" <?php selected( $body_type_car, 'Хэтчбэк' )?> >Хэтчбэк</option>
+			<option value="Купе" <?php selected( $body_type_car, 'Купе' )?> >Купе</option>
+			<option value="Внедорожник" <?php selected( $body_type_car, 'Внедорожник' )?> >Внедорожник</option>
+			<option value="Минивэн" <?php selected( $body_type_car, 'Минивэн' )?> >Минивэн</option>
+			<option value="Кабриолет" <?php selected( $body_type_car, 'Кабриолет' )?> >Кабриолет</option>
+		</select></p>
+
+	<input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
+	<?php
+}
+
+function age_car_field( $post ){
+	?>
+	<p>Укажите год выпуска автомобиля:</p>
+	<p><textarea type="text" name="extra[age_car]" style="width:100%;height:50px;"><?php echo get_post_meta($post->ID, 'age_car', 1); ?></textarea></p>
+
+	<input type="hidden" name="extra_fields_nonce" value="<?php echo wp_create_nonce(__FILE__); ?>" />
+	<?php
+}
+
+
+
+// включаем обновление полей при сохранении
+add_action('save_post', 'my_extra_fields_update', 0);
+
+/* Сохраняем данные, при сохранении поста */
+function my_extra_fields_update( $post_id ){
+	if ( ! wp_verify_nonce($_POST['extra_fields_nonce'], __FILE__) ) return false; // проверка
+	if ( defined('DOING_AUTOSAVE') && DOING_AUTOSAVE  ) return false; // выходим если это автосохранение
+	if ( !current_user_can('edit_post', $post_id) ) return false; // выходим если юзер не имеет право редактировать запись
+
+	if( !isset($_POST['extra']) ) return false; // выходим если данных нет
+
+	// Все ОК! Теперь, нужно сохранить/удалить данные
+	$_POST['extra'] = array_map('trim', $_POST['extra']); // чистим все данные от пробелов по краям
+	foreach( $_POST['extra'] as $key=>$value ){
+		if( empty($value) ){
+			delete_post_meta($post_id, $key); // удаляем поле если значение пустое
+			continue;
+		}
+
+		update_post_meta($post_id, $key, $value); // add_post_meta() работает автоматически
+	}
+	return $post_id;
+}
 ?>

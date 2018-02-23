@@ -21,15 +21,9 @@
 
 <?php wp_footer();
 
-//	if ( ! is_admin()) {
-//		var_dump($wp_query);
-//	}
-
-	function __type_deal_elements(){
-			$deal_terms = get_terms(array( 'taxonomy'=>'model','hide_empty'=>0, 'fields'=>'id=>slug' ));
-			$deal_terms[] = implode('-', $deal_terms); // sale-rent
-			return $deal_terms;
-		}
+	if ( ! is_admin()) {
+		//var_dump($wp_query);
+	}
 
 	//print_r( get_queried_object() );
 ?>
